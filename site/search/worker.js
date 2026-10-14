@@ -75,6 +75,15 @@ function onScriptsLoaded () {
       } else if (lang.length > 1) {
         this.use(lunr.multiLanguage.apply(null, lang));  // spread operator not supported in all browsers: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Spread_operator#Browser_compatibility
       }
+      // Keep Chinese resource titles searchable alongside English tool names.
+      function resourceTrimmer(token) {
+        return token.update(function (text) {
+          return text.replace(/^[^\w\u3400-\u9fff]+/, '').replace(/[^\w\u3400-\u9fff]+$/, '');
+        });
+      }
+      lunr.Pipeline.registerFunction(resourceTrimmer, 'resourceTrimmer');
+      this.pipeline.before(lunr.trimmer, resourceTrimmer);
+      this.pipeline.remove(lunr.trimmer);
       this.field('title');
       this.field('text');
       this.ref('location');
